@@ -1,0 +1,6 @@
+@AutoRebalCarteiraAPI_HostAddress = http://localhost:5009
+
+GET {{AutoRebalCarteiraAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

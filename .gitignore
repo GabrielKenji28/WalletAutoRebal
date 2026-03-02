@@ -52,3 +52,51 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Visual Studio and editors
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Rider / JetBrains
+.idea/
+*.iml
+
+# ASP.NET Core / local secrets
+secrets.json
+local.settings.json
+appsettings.*.Development.json
+
+# Node / package managers
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test results and coverage
+TestResults/
+coverage/
+coverage.xml
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Generated C# files (from build)
+**/*.GlobalUsings.g.cs
+**/*.AssemblyInfo.cs
+
+# Publish output
+publish/
+
+# Misc archives
+*.zip
+*.7z
+*.rar
+
+# Keep this file tracked
+!.gitignore
