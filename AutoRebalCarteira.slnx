@@ -1,3 +1,6 @@
 <Solution>
+  <Project Path="AutoRebalCarteira.Data/AutoRebalCarteira.Data.csproj" />
+  <Project Path="AutoRebalCarteira.Domain/AutoRebalCarteira.Domain.csproj" />
   <Project Path="AutoRebalCarteiraAPI/AutoRebalCarteiraAPI.csproj" />
+  <Project Path="AutoRebalCarteiraAPI/AutoRebalCarteiraAPI.Tests/AutoRebalCarteiraAPI.Tests.csproj" />
 </Solution>
