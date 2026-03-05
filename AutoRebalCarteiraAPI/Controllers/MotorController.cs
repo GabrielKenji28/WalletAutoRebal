@@ -19,13 +19,15 @@ public class MotorController : ControllerBase
 
     [HttpPost("executar-compra")]
     [ProducesResponseType(typeof(ExecutarCompraResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
+    [ProducesResponseType(typeof(ExecutarCompraResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ExecutarCompraResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ExecutarCompraResponse), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> ExecutarCompra([FromBody] ExecutarCompraRequest request)
     {
         var data = DateOnly.Parse(request.DataReferencia);
         var response = await _motorCompraService.ExecutarCompraAsync(data);
+        if (response.Failed)
+            return StatusCode(response.StatusCode, response);
         return Ok(response);
     }
 

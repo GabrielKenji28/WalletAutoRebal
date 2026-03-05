@@ -32,7 +32,7 @@ public class ClienteServiceTests
     }
 
     [Fact]
-    public async Task AderirAsync_CpfDuplicado_DeveLancarExcecao()
+    public async Task AderirAsync_CpfDuplicado_DeveRetornarFailed()
     {
         var db = TestHelper.CreateInMemoryDb();
         var config = TestHelper.CreateConfiguration();
@@ -46,35 +46,35 @@ public class ClienteServiceTests
             ValorMensal = 3000
         });
 
-        var ex = await Assert.ThrowsAsync<BusinessException>(() =>
-            service.AderirAsync(new AdesaoRequest
-            {
-                Nome = "Maria",
-                Cpf = "12345678901",
-                Email = "maria@test.com",
-                ValorMensal = 5000
-            }));
+        var result = await service.AderirAsync(new AdesaoRequest
+        {
+            Nome = "Maria",
+            Cpf = "12345678901",
+            Email = "maria@test.com",
+            ValorMensal = 5000
+        });
 
-        Assert.Equal("CLIENTE_CPF_DUPLICADO", ex.Codigo);
+        Assert.True(result.Failed);
+        Assert.Equal("CLIENTE_CPF_DUPLICADO", result.ErrorCode);
     }
 
     [Fact]
-    public async Task AderirAsync_ValorMensalInvalido_DeveLancarExcecao()
+    public async Task AderirAsync_ValorMensalInvalido_DeveRetornarFailed()
     {
         var db = TestHelper.CreateInMemoryDb();
         var config = TestHelper.CreateConfiguration();
         var service = new ClienteService(db, _parser, config);
 
-        var ex = await Assert.ThrowsAsync<BusinessException>(() =>
-            service.AderirAsync(new AdesaoRequest
-            {
-                Nome = "Joao",
-                Cpf = "12345678901",
-                Email = "joao@test.com",
-                ValorMensal = 50
-            }));
+        var result = await service.AderirAsync(new AdesaoRequest
+        {
+            Nome = "Joao",
+            Cpf = "12345678901",
+            Email = "joao@test.com",
+            ValorMensal = 50
+        });
 
-        Assert.Equal("VALOR_MENSAL_INVALIDO", ex.Codigo);
+        Assert.True(result.Failed);
+        Assert.Equal("VALOR_MENSAL_INVALIDO", result.ErrorCode);
     }
 
     [Fact]
@@ -99,20 +99,20 @@ public class ClienteServiceTests
     }
 
     [Fact]
-    public async Task SairAsync_ClienteInexistente_DeveLancarExcecao()
+    public async Task SairAsync_ClienteInexistente_DeveRetornarFailed()
     {
         var db = TestHelper.CreateInMemoryDb();
         var config = TestHelper.CreateConfiguration();
         var service = new ClienteService(db, _parser, config);
 
-        var ex = await Assert.ThrowsAsync<BusinessException>(() =>
-            service.SairAsync(999));
+        var result = await service.SairAsync(999);
 
-        Assert.Equal("CLIENTE_NAO_ENCONTRADO", ex.Codigo);
+        Assert.True(result.Failed);
+        Assert.Equal("CLIENTE_NAO_ENCONTRADO", result.ErrorCode);
     }
 
     [Fact]
-    public async Task SairAsync_ClienteJaInativo_DeveLancarExcecao()
+    public async Task SairAsync_ClienteJaInativo_DeveRetornarFailed()
     {
         var db = TestHelper.CreateInMemoryDb();
         var config = TestHelper.CreateConfiguration();
@@ -128,10 +128,10 @@ public class ClienteServiceTests
 
         await service.SairAsync(adesao.ClienteId);
 
-        var ex = await Assert.ThrowsAsync<BusinessException>(() =>
-            service.SairAsync(adesao.ClienteId));
+        var result = await service.SairAsync(adesao.ClienteId);
 
-        Assert.Equal("CLIENTE_JA_INATIVO", ex.Codigo);
+        Assert.True(result.Failed);
+        Assert.Equal("CLIENTE_JA_INATIVO", result.ErrorCode);
     }
 
     [Fact]
@@ -159,7 +159,7 @@ public class ClienteServiceTests
     }
 
     [Fact]
-    public async Task AlterarValorMensalAsync_ValorInvalido_DeveLancarExcecao()
+    public async Task AlterarValorMensalAsync_ValorInvalido_DeveRetornarFailed()
     {
         var db = TestHelper.CreateInMemoryDb();
         var config = TestHelper.CreateConfiguration();
@@ -173,13 +173,13 @@ public class ClienteServiceTests
             ValorMensal = 3000
         });
 
-        var ex = await Assert.ThrowsAsync<BusinessException>(() =>
-            service.AlterarValorMensalAsync(adesao.ClienteId, new AlterarValorMensalRequest
-            {
-                NovoValorMensal = 10
-            }));
+        var result = await service.AlterarValorMensalAsync(adesao.ClienteId, new AlterarValorMensalRequest
+        {
+            NovoValorMensal = 10
+        });
 
-        Assert.Equal("VALOR_MENSAL_INVALIDO", ex.Codigo);
+        Assert.True(result.Failed);
+        Assert.Equal("VALOR_MENSAL_INVALIDO", result.ErrorCode);
     }
 
     [Fact]

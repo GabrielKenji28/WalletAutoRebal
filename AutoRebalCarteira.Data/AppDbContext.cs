@@ -1,4 +1,5 @@
 using AutoRebalCarteira.Domain.Entities;
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 
 namespace AutoRebalCarteira.Data;
@@ -17,6 +18,28 @@ public class AppDbContext : DbContext
     public DbSet<Distribuicao> Distribuicoes => Set<Distribuicao>();
     public DbSet<DistribuicaoItem> DistribuicaoItens => Set<DistribuicaoItem>();
     public DbSet<HistoricoValorMensal> HistoricoValoresMensais => Set<HistoricoValorMensal>();
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var agora = DateTime.UtcNow;
+
+        foreach (var entry in ChangeTracker.Entries<EntidadeBase>())
+        {
+            switch (entry.State)
+            {
+                case EntityState.Added:
+                    entry.Entity.CriadoEm = agora;
+                    if (!entry.Entity.Ativo)
+                        entry.Entity.Ativo = true;
+                    break;
+                case EntityState.Modified:
+                    entry.Entity.AtualizadoEm = agora;
+                    break;
+            }
+        }
+
+        return await base.SaveChangesAsync(cancellationToken);
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -52,7 +75,7 @@ public class AppDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Ticker).HasMaxLength(12).IsRequired();
             entity.Property(e => e.PrecoMedio).HasPrecision(18, 2);
-            entity.HasIndex(e => new { e.ContaGraficaId, e.Ticker }).IsUnique();
+            entity.HasIndex(e => new { e.ContaGraficaId, e.Ticker });
         });
 
         modelBuilder.Entity<CestaRecomendacao>(entity =>
@@ -118,6 +141,20 @@ public class AppDbContext : DbContext
             entity.Property(e => e.ValorNovo).HasPrecision(18, 2);
         });
 
+        // Filtros globais e indexes de Ativo para todas as entidades
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (!typeof(EntidadeBase).IsAssignableFrom(entityType.ClrType))
+                continue;
+
+            var parameter = Expression.Parameter(entityType.ClrType, "e");
+            var ativoProperty = Expression.Property(parameter, nameof(EntidadeBase.Ativo));
+            var filter = Expression.Lambda(ativoProperty, parameter);
+            modelBuilder.Entity(entityType.ClrType).HasQueryFilter(filter);
+
+            modelBuilder.Entity(entityType.ClrType).HasIndex(nameof(EntidadeBase.Ativo));
+        }
+
         // Seed: Conta Master
         modelBuilder.Entity<ContaGrafica>().HasData(new ContaGrafica
         {
@@ -125,6 +162,8 @@ public class AppDbContext : DbContext
             NumeroConta = "MST-000001",
             Tipo = "MASTER",
             DataCriacao = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            CriadoEm = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            Ativo = true,
             ClienteId = null
         });
     }

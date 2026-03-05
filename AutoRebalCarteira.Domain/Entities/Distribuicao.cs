@@ -1,8 +1,7 @@
 namespace AutoRebalCarteira.Domain.Entities;
 
-public class Distribuicao
+public class Distribuicao : EntidadeBase
 {
-    public int Id { get; set; }
     public int OrdemCompraId { get; set; }
     public OrdemCompra OrdemCompra { get; set; } = null!;
     public int ClienteId { get; set; }

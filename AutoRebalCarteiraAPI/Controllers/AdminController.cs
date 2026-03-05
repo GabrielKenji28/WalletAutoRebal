@@ -19,19 +19,23 @@ public class AdminController : ControllerBase
 
     [HttpPost("cesta")]
     [ProducesResponseType(typeof(CadastrarCestaResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(CadastrarCestaResponse), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CadastrarCesta([FromBody] CadastrarCestaRequest request)
     {
         var response = await _cestaService.CadastrarOuAlterarAsync(request);
+        if (response.Failed)
+            return StatusCode(response.StatusCode, response);
         return CreatedAtAction(nameof(ObterCestaAtual), null, response);
     }
 
     [HttpGet("cesta/atual")]
     [ProducesResponseType(typeof(CestaAtualResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(CestaAtualResponse), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ObterCestaAtual()
     {
         var response = await _cestaService.ObterCestaAtualAsync();
+        if (response.Failed)
+            return StatusCode(response.StatusCode, response);
         return Ok(response);
     }
 

@@ -1,8 +1,7 @@
 namespace AutoRebalCarteira.Domain.Entities;
 
-public class HistoricoValorMensal
+public class HistoricoValorMensal : EntidadeBase
 {
-    public int Id { get; set; }
     public int ClienteId { get; set; }
     public Cliente Cliente { get; set; } = null!;
     public decimal ValorAnterior { get; set; }

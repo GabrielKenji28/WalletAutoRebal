@@ -1,8 +1,7 @@
 namespace AutoRebalCarteira.Domain.Entities;
 
-public class DistribuicaoItem
+public class DistribuicaoItem : EntidadeBase
 {
-    public int Id { get; set; }
     public int DistribuicaoId { get; set; }
     public Distribuicao Distribuicao { get; set; } = null!;
     public string Ticker { get; set; } = string.Empty;

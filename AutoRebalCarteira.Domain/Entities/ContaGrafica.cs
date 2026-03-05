@@ -1,8 +1,7 @@
 namespace AutoRebalCarteira.Domain.Entities;
 
-public class ContaGrafica
+public class ContaGrafica : EntidadeBase
 {
-    public int Id { get; set; }
     public string NumeroConta { get; set; } = string.Empty;
     public string Tipo { get; set; } = string.Empty;
     public DateTime DataCriacao { get; set; }

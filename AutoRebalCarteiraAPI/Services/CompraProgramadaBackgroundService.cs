@@ -26,12 +26,14 @@ public class CompraProgramadaBackgroundService : BackgroundService
                 {
                     using var scope = _serviceProvider.CreateScope();
                     var motorCompra = scope.ServiceProvider.GetRequiredService<IMotorCompraService>();
-                    await motorCompra.ExecutarCompraAsync(hoje);
-                    _logger.LogInformation("Compra programada executada automaticamente para {Data}", hoje);
-                }
-                catch (BusinessException ex) when (ex.Codigo == "COMPRA_JA_EXECUTADA")
-                {
-                    _logger.LogDebug("Compra ja executada para {Data}", hoje);
+                    var resultado = await motorCompra.ExecutarCompraAsync(hoje);
+
+                    if (resultado.Failed && resultado.ErrorCode == "COMPRA_JA_EXECUTADA")
+                        _logger.LogDebug("Compra ja executada para {Data}", hoje);
+                    else if (resultado.Failed)
+                        _logger.LogWarning("Erro ao executar compra programada para {Data}: {Erro}", hoje, resultado.ErrorMessage);
+                    else
+                        _logger.LogInformation("Compra programada executada automaticamente para {Data}", hoje);
                 }
                 catch (Exception ex)
                 {

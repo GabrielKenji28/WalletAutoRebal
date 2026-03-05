@@ -38,10 +38,12 @@ public class MotorRebalanceamentoService : IMotorRebalanceamentoService
     public async Task RebalancearPorMudancaCestaAsync(int cestaAntigaId, int cestaNovaId)
     {
         var cestaAntiga = await _db.CestasRecomendacao
+            .IgnoreQueryFilters()
             .Include(c => c.Itens)
             .FirstAsync(c => c.Id == cestaAntigaId);
 
         var cestaNova = await _db.CestasRecomendacao
+            .IgnoreQueryFilters()
             .Include(c => c.Itens)
             .FirstAsync(c => c.Id == cestaNovaId);
 
@@ -207,10 +209,10 @@ public class MotorRebalanceamentoService : IMotorRebalanceamentoService
                 });
             }
 
-            // Limpar custodia zerada
+            // Soft-delete custodia zerada
             var zerados = cliente.ContaGrafica.Custodia.Where(c => c.Quantidade <= 0 && c.Id > 0).ToList();
             foreach (var z in zerados)
-                _db.CustodiaItens.Remove(z);
+                z.Ativo = false;
         }
 
         await _db.SaveChangesAsync();
@@ -221,7 +223,7 @@ public class MotorRebalanceamentoService : IMotorRebalanceamentoService
     {
         var cesta = await _db.CestasRecomendacao
             .Include(c => c.Itens)
-            .FirstOrDefaultAsync(c => c.Ativa);
+            .FirstOrDefaultAsync();
 
         if (cesta == null) return;
 

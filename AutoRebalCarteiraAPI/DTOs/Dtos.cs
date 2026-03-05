@@ -1,4 +1,20 @@
+using System.Text.Json.Serialization;
+
 namespace AutoRebalCarteiraAPI.DTOs;
+
+public class BaseResponse
+{
+    public bool Failed { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ErrorMessage { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ErrorCode { get; set; }
+
+    [JsonIgnore]
+    public int StatusCode { get; set; } = 200;
+}
 
 // === CLIENTE ===
 
@@ -10,7 +26,7 @@ public class AdesaoRequest
     public decimal ValorMensal { get; set; }
 }
 
-public class AdesaoResponse
+public class AdesaoResponse : BaseResponse
 {
     public int ClienteId { get; set; }
     public string Nome { get; set; } = string.Empty;
@@ -30,7 +46,7 @@ public class ContaGraficaDto
     public DateTime DataCriacao { get; set; }
 }
 
-public class SaidaResponse
+public class SaidaResponse : BaseResponse
 {
     public int ClienteId { get; set; }
     public string Nome { get; set; } = string.Empty;
@@ -44,7 +60,7 @@ public class AlterarValorMensalRequest
     public decimal NovoValorMensal { get; set; }
 }
 
-public class AlterarValorMensalResponse
+public class AlterarValorMensalResponse : BaseResponse
 {
     public int ClienteId { get; set; }
     public decimal ValorMensalAnterior { get; set; }
@@ -53,7 +69,7 @@ public class AlterarValorMensalResponse
     public string Mensagem { get; set; } = string.Empty;
 }
 
-public class CarteiraResponse
+public class CarteiraResponse : BaseResponse
 {
     public int ClienteId { get; set; }
     public string Nome { get; set; } = string.Empty;
@@ -83,7 +99,7 @@ public class AtivoCarteiraDto
     public decimal ComposicaoCarteira { get; set; }
 }
 
-public class RentabilidadeResponse
+public class RentabilidadeResponse : BaseResponse
 {
     public int ClienteId { get; set; }
     public string Nome { get; set; } = string.Empty;
@@ -122,7 +138,7 @@ public class CestaItemDto
     public decimal Percentual { get; set; }
 }
 
-public class CadastrarCestaResponse
+public class CadastrarCestaResponse : BaseResponse
 {
     public int CestaId { get; set; }
     public string Nome { get; set; } = string.Empty;
@@ -143,7 +159,7 @@ public class CestaDesativadaDto
     public DateTime? DataDesativacao { get; set; }
 }
 
-public class CestaAtualResponse
+public class CestaAtualResponse : BaseResponse
 {
     public int CestaId { get; set; }
     public string Nome { get; set; } = string.Empty;
@@ -159,7 +175,7 @@ public class CestaItemCotacaoDto
     public decimal CotacaoAtual { get; set; }
 }
 
-public class HistoricoCestasResponse
+public class HistoricoCestasResponse : BaseResponse
 {
     public List<CestaHistoricoDto> Cestas { get; set; } = [];
 }
@@ -176,7 +192,7 @@ public class CestaHistoricoDto
 
 // === CUSTODIA MASTER ===
 
-public class CustodiaMasterResponse
+public class CustodiaMasterResponse : BaseResponse
 {
     public ContaGraficaDto ContaMaster { get; set; } = null!;
     public List<CustodiaItemDto> Custodia { get; set; } = [];
@@ -198,7 +214,7 @@ public class ExecutarCompraRequest
     public string DataReferencia { get; set; } = string.Empty;
 }
 
-public class ExecutarCompraResponse
+public class ExecutarCompraResponse : BaseResponse
 {
     public DateTime DataExecucao { get; set; }
     public int TotalClientes { get; set; }

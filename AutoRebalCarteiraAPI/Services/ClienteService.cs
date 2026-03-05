@@ -31,11 +31,11 @@ public class ClienteService : IClienteService
 
     public async Task<AdesaoResponse> AderirAsync(AdesaoRequest request)
     {
-        if (await _db.Clientes.AnyAsync(c => c.Cpf == request.Cpf))
-            throw new BusinessException("CPF ja cadastrado no sistema.", "CLIENTE_CPF_DUPLICADO");
+        if (await _db.Clientes.IgnoreQueryFilters().AnyAsync(c => c.Cpf == request.Cpf))
+            return new AdesaoResponse { Failed = true, ErrorMessage = "CPF ja cadastrado no sistema.", ErrorCode = "CLIENTE_CPF_DUPLICADO", StatusCode = 400 };
 
         if (request.ValorMensal < 100)
-            throw new BusinessException("O valor mensal minimo e de R$ 100,00.", "VALOR_MENSAL_INVALIDO");
+            return new AdesaoResponse { Failed = true, ErrorMessage = "O valor mensal minimo e de R$ 100,00.", ErrorCode = "VALOR_MENSAL_INVALIDO", StatusCode = 400 };
 
         var ultimaConta = await _db.ContasGraficas
             .Where(c => c.Tipo == "FILHOTE")
@@ -88,11 +88,12 @@ public class ClienteService : IClienteService
 
     public async Task<SaidaResponse> SairAsync(int clienteId)
     {
-        var cliente = await _db.Clientes.FindAsync(clienteId)
-            ?? throw new BusinessException("Cliente nao encontrado.", "CLIENTE_NAO_ENCONTRADO", 404);
+        var cliente = await _db.Clientes.FindAsync(clienteId);
+        if (cliente == null)
+            return new SaidaResponse { Failed = true, ErrorMessage = "Cliente nao encontrado.", ErrorCode = "CLIENTE_NAO_ENCONTRADO", StatusCode = 404 };
 
         if (!cliente.Ativo)
-            throw new BusinessException("Cliente ja havia saido do produto.", "CLIENTE_JA_INATIVO");
+            return new SaidaResponse { Failed = true, ErrorMessage = "Cliente ja havia saido do produto.", ErrorCode = "CLIENTE_JA_INATIVO", StatusCode = 400 };
 
         cliente.Ativo = false;
         cliente.DataSaida = DateTime.UtcNow;
@@ -110,11 +111,12 @@ public class ClienteService : IClienteService
 
     public async Task<AlterarValorMensalResponse> AlterarValorMensalAsync(int clienteId, AlterarValorMensalRequest request)
     {
-        var cliente = await _db.Clientes.FindAsync(clienteId)
-            ?? throw new BusinessException("Cliente nao encontrado.", "CLIENTE_NAO_ENCONTRADO", 404);
+        var cliente = await _db.Clientes.FindAsync(clienteId);
+        if (cliente == null)
+            return new AlterarValorMensalResponse { Failed = true, ErrorMessage = "Cliente nao encontrado.", ErrorCode = "CLIENTE_NAO_ENCONTRADO", StatusCode = 404 };
 
         if (request.NovoValorMensal < 100)
-            throw new BusinessException("O valor mensal minimo e de R$ 100,00.", "VALOR_MENSAL_INVALIDO");
+            return new AlterarValorMensalResponse { Failed = true, ErrorMessage = "O valor mensal minimo e de R$ 100,00.", ErrorCode = "VALOR_MENSAL_INVALIDO", StatusCode = 400 };
 
         var valorAnterior = cliente.ValorMensal;
         var agora = DateTime.UtcNow;
@@ -145,8 +147,10 @@ public class ClienteService : IClienteService
         var cliente = await _db.Clientes
             .Include(c => c.ContaGrafica)
                 .ThenInclude(cg => cg.Custodia)
-            .FirstOrDefaultAsync(c => c.Id == clienteId)
-            ?? throw new BusinessException("Cliente nao encontrado.", "CLIENTE_NAO_ENCONTRADO", 404);
+            .FirstOrDefaultAsync(c => c.Id == clienteId);
+
+        if (cliente == null)
+            return new CarteiraResponse { Failed = true, ErrorMessage = "Cliente nao encontrado.", ErrorCode = "CLIENTE_NAO_ENCONTRADO", StatusCode = 404 };
 
         var custodia = cliente.ContaGrafica.Custodia.Where(c => c.Quantidade > 0).ToList();
         var tickers = custodia.Select(c => c.Ticker).ToList();
@@ -214,6 +218,8 @@ public class ClienteService : IClienteService
     public async Task<RentabilidadeResponse> ConsultarRentabilidadeAsync(int clienteId)
     {
         var carteira = await ConsultarCarteiraAsync(clienteId);
+        if (carteira.Failed)
+            return new RentabilidadeResponse { Failed = true, ErrorMessage = carteira.ErrorMessage, ErrorCode = carteira.ErrorCode, StatusCode = carteira.StatusCode };
 
         var distribuicoes = await _db.Distribuicoes
             .Where(d => d.ClienteId == clienteId)

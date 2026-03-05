@@ -1,8 +1,7 @@
 namespace AutoRebalCarteira.Domain.Entities;
 
-public class OrdemCompra
+public class OrdemCompra : EntidadeBase
 {
-    public int Id { get; set; }
     public DateTime DataExecucao { get; set; }
     public decimal ValorTotalConsolidado { get; set; }
     public int TotalClientes { get; set; }

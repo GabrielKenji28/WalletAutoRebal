@@ -1,5 +1,4 @@
 using AutoRebalCarteira.Data.Infrastructure.Cotahist;
-using AutoRebalCarteira.Domain.Exceptions;
 using AutoRebalCarteiraAPI.DTOs;
 using AutoRebalCarteiraAPI.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,81 +43,81 @@ public class CestaServiceTests
     }
 
     [Fact]
-    public async Task CadastrarCesta_Menos5Ativos_DeveLancarExcecao()
+    public async Task CadastrarCesta_Menos5Ativos_DeveRetornarFailed()
     {
         var db = TestHelper.CreateInMemoryDb();
         var service = CreateService(db);
 
-        var ex = await Assert.ThrowsAsync<BusinessException>(() =>
-            service.CadastrarOuAlterarAsync(new CadastrarCestaRequest
-            {
-                Nome = "Invalida",
-                Itens =
-                [
-                    new() { Ticker = "PETR4", Percentual = 50 },
-                    new() { Ticker = "VALE3", Percentual = 50 }
-                ]
-            }));
+        var result = await service.CadastrarOuAlterarAsync(new CadastrarCestaRequest
+        {
+            Nome = "Invalida",
+            Itens =
+            [
+                new() { Ticker = "PETR4", Percentual = 50 },
+                new() { Ticker = "VALE3", Percentual = 50 }
+            ]
+        });
 
-        Assert.Equal("QUANTIDADE_ATIVOS_INVALIDA", ex.Codigo);
+        Assert.True(result.Failed);
+        Assert.Equal("QUANTIDADE_ATIVOS_INVALIDA", result.ErrorCode);
     }
 
     [Fact]
-    public async Task CadastrarCesta_PercentualNao100_DeveLancarExcecao()
+    public async Task CadastrarCesta_PercentualNao100_DeveRetornarFailed()
     {
         var db = TestHelper.CreateInMemoryDb();
         var service = CreateService(db);
 
-        var ex = await Assert.ThrowsAsync<BusinessException>(() =>
-            service.CadastrarOuAlterarAsync(new CadastrarCestaRequest
-            {
-                Nome = "Invalida",
-                Itens =
-                [
-                    new() { Ticker = "PETR4", Percentual = 30 },
-                    new() { Ticker = "VALE3", Percentual = 25 },
-                    new() { Ticker = "ITUB4", Percentual = 20 },
-                    new() { Ticker = "BBDC4", Percentual = 15 },
-                    new() { Ticker = "WEGE3", Percentual = 5 }
-                ]
-            }));
+        var result = await service.CadastrarOuAlterarAsync(new CadastrarCestaRequest
+        {
+            Nome = "Invalida",
+            Itens =
+            [
+                new() { Ticker = "PETR4", Percentual = 30 },
+                new() { Ticker = "VALE3", Percentual = 25 },
+                new() { Ticker = "ITUB4", Percentual = 20 },
+                new() { Ticker = "BBDC4", Percentual = 15 },
+                new() { Ticker = "WEGE3", Percentual = 5 }
+            ]
+        });
 
-        Assert.Equal("PERCENTUAIS_INVALIDOS", ex.Codigo);
+        Assert.True(result.Failed);
+        Assert.Equal("PERCENTUAIS_INVALIDOS", result.ErrorCode);
     }
 
     [Fact]
-    public async Task CadastrarCesta_PercentualZero_DeveLancarExcecao()
+    public async Task CadastrarCesta_PercentualZero_DeveRetornarFailed()
     {
         var db = TestHelper.CreateInMemoryDb();
         var service = CreateService(db);
 
-        var ex = await Assert.ThrowsAsync<BusinessException>(() =>
-            service.CadastrarOuAlterarAsync(new CadastrarCestaRequest
-            {
-                Nome = "Invalida",
-                Itens =
-                [
-                    new() { Ticker = "PETR4", Percentual = 40 },
-                    new() { Ticker = "VALE3", Percentual = 25 },
-                    new() { Ticker = "ITUB4", Percentual = 20 },
-                    new() { Ticker = "BBDC4", Percentual = 15 },
-                    new() { Ticker = "WEGE3", Percentual = 0 }
-                ]
-            }));
+        var result = await service.CadastrarOuAlterarAsync(new CadastrarCestaRequest
+        {
+            Nome = "Invalida",
+            Itens =
+            [
+                new() { Ticker = "PETR4", Percentual = 40 },
+                new() { Ticker = "VALE3", Percentual = 25 },
+                new() { Ticker = "ITUB4", Percentual = 20 },
+                new() { Ticker = "BBDC4", Percentual = 15 },
+                new() { Ticker = "WEGE3", Percentual = 0 }
+            ]
+        });
 
-        Assert.Equal("PERCENTUAIS_INVALIDOS", ex.Codigo);
+        Assert.True(result.Failed);
+        Assert.Equal("PERCENTUAIS_INVALIDOS", result.ErrorCode);
     }
 
     [Fact]
-    public async Task ObterCestaAtual_SemCesta_DeveLancarExcecao()
+    public async Task ObterCestaAtual_SemCesta_DeveRetornarFailed()
     {
         var db = TestHelper.CreateInMemoryDb();
         var service = CreateService(db);
 
-        var ex = await Assert.ThrowsAsync<BusinessException>(() =>
-            service.ObterCestaAtualAsync());
+        var result = await service.ObterCestaAtualAsync();
 
-        Assert.Equal("CESTA_NAO_ENCONTRADA", ex.Codigo);
+        Assert.True(result.Failed);
+        Assert.Equal("CESTA_NAO_ENCONTRADA", result.ErrorCode);
     }
 
     [Fact]

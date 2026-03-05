@@ -32,7 +32,7 @@ public class MotorCompraServiceTests
     }
 
     [Fact]
-    public async Task ExecutarCompra_SemClientesAtivos_DeveLancarExcecao()
+    public async Task ExecutarCompra_SemClientesAtivos_DeveRetornarFailed()
     {
         var dir = CreateTestCotacoesDir();
         try
@@ -47,7 +47,7 @@ public class MotorCompraServiceTests
             var cesta = new CestaRecomendacao
             {
                 Nome = "Top Five",
-                Ativa = true,
+                Ativo = true,
                 DataCriacao = DateTime.UtcNow,
                 Itens =
                 [
@@ -63,10 +63,10 @@ public class MotorCompraServiceTests
 
             var service = new MotorCompraService(db, parser, kafka.Object, config, logger.Object);
 
-            var ex = await Assert.ThrowsAsync<BusinessException>(() =>
-                service.ExecutarCompraAsync(new DateOnly(2026, 2, 25)));
+            var result = await service.ExecutarCompraAsync(new DateOnly(2026, 2, 25));
 
-            Assert.Equal("SEM_CLIENTES_ATIVOS", ex.Codigo);
+            Assert.True(result.Failed);
+            Assert.Equal("SEM_CLIENTES_ATIVOS", result.ErrorCode);
         }
         finally
         {
@@ -75,7 +75,7 @@ public class MotorCompraServiceTests
     }
 
     [Fact]
-    public async Task ExecutarCompra_SemCesta_DeveLancarExcecao()
+    public async Task ExecutarCompra_SemCesta_DeveRetornarFailed()
     {
         var dir = CreateTestCotacoesDir();
         try
@@ -88,10 +88,10 @@ public class MotorCompraServiceTests
 
             var service = new MotorCompraService(db, parser, kafka.Object, config, logger.Object);
 
-            var ex = await Assert.ThrowsAsync<BusinessException>(() =>
-                service.ExecutarCompraAsync(new DateOnly(2026, 2, 25)));
+            var result = await service.ExecutarCompraAsync(new DateOnly(2026, 2, 25));
 
-            Assert.Equal("CESTA_NAO_ENCONTRADA", ex.Codigo);
+            Assert.True(result.Failed);
+            Assert.Equal("CESTA_NAO_ENCONTRADA", result.ErrorCode);
         }
         finally
         {
@@ -117,7 +117,7 @@ public class MotorCompraServiceTests
             var cesta = new CestaRecomendacao
             {
                 Nome = "Top Five",
-                Ativa = true,
+                Ativo = true,
                 DataCriacao = DateTime.UtcNow,
                 Itens =
                 [
@@ -183,7 +183,7 @@ public class MotorCompraServiceTests
     }
 
     [Fact]
-    public async Task ExecutarCompra_DuplicadaMesmaData_DeveLancarExcecao()
+    public async Task ExecutarCompra_DuplicadaMesmaData_DeveRetornarFailed()
     {
         var dir = CreateTestCotacoesDir();
         try
@@ -199,7 +199,7 @@ public class MotorCompraServiceTests
             var cesta = new CestaRecomendacao
             {
                 Nome = "Top Five",
-                Ativa = true,
+                Ativo = true,
                 DataCriacao = DateTime.UtcNow,
                 Itens =
                 [
@@ -232,10 +232,10 @@ public class MotorCompraServiceTests
             var service = new MotorCompraService(db, parser, kafka.Object, config, logger.Object);
             await service.ExecutarCompraAsync(new DateOnly(2026, 2, 25));
 
-            var ex = await Assert.ThrowsAsync<BusinessException>(() =>
-                service.ExecutarCompraAsync(new DateOnly(2026, 2, 25)));
+            var result = await service.ExecutarCompraAsync(new DateOnly(2026, 2, 25));
 
-            Assert.Equal("COMPRA_JA_EXECUTADA", ex.Codigo);
+            Assert.True(result.Failed);
+            Assert.Equal("COMPRA_JA_EXECUTADA", result.ErrorCode);
         }
         finally
         {
@@ -260,7 +260,7 @@ public class MotorCompraServiceTests
             var cesta = new CestaRecomendacao
             {
                 Nome = "Top Five",
-                Ativa = true,
+                Ativo = true,
                 DataCriacao = DateTime.UtcNow,
                 Itens =
                 [

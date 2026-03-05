@@ -41,13 +41,15 @@ public class MotorCompraService : IMotorCompraService
 
         // Verificar se ja foi executada para esta data
         if (await _db.OrdensCompra.AnyAsync(o => o.DataExecucao.Date == dataExecucao.ToDateTime(TimeOnly.MinValue).Date))
-            throw new BusinessException("Compra ja foi executada para esta data.", "COMPRA_JA_EXECUTADA", 409);
+            return new ExecutarCompraResponse { Failed = true, ErrorMessage = "Compra ja foi executada para esta data.", ErrorCode = "COMPRA_JA_EXECUTADA", StatusCode = 409 };
 
         // Obter cesta vigente
         var cesta = await _db.CestasRecomendacao
             .Include(c => c.Itens)
-            .FirstOrDefaultAsync(c => c.Ativa)
-            ?? throw new BusinessException("Nenhuma cesta ativa encontrada.", "CESTA_NAO_ENCONTRADA", 404);
+            .FirstOrDefaultAsync();
+
+        if (cesta == null)
+            return new ExecutarCompraResponse { Failed = true, ErrorMessage = "Nenhuma cesta ativa encontrada.", ErrorCode = "CESTA_NAO_ENCONTRADA", StatusCode = 404 };
 
         // Obter clientes ativos
         var clientes = await _db.Clientes
@@ -57,7 +59,7 @@ public class MotorCompraService : IMotorCompraService
             .ToListAsync();
 
         if (clientes.Count == 0)
-            throw new BusinessException("Nenhum cliente ativo encontrado.", "SEM_CLIENTES_ATIVOS");
+            return new ExecutarCompraResponse { Failed = true, ErrorMessage = "Nenhum cliente ativo encontrado.", ErrorCode = "SEM_CLIENTES_ATIVOS", StatusCode = 400 };
 
         // 1. Agrupamento: 1/3 do valor mensal de cada cliente
         var aportesPorCliente = clientes.ToDictionary(c => c, c => Math.Round(c.ValorMensal / 3m, 2));
@@ -69,7 +71,7 @@ public class MotorCompraService : IMotorCompraService
         var cotacoes = _parser.ObterCotacoesFechamento(pastaCotacoes, tickers);
 
         if (cotacoes.Count == 0)
-            throw new BusinessException("Arquivo COTAHIST nao encontrado ou sem cotacoes.", "COTACAO_NAO_ENCONTRADA", 404);
+            return new ExecutarCompraResponse { Failed = true, ErrorMessage = "Arquivo COTAHIST nao encontrado ou sem cotacoes.", ErrorCode = "COTACAO_NAO_ENCONTRADA", StatusCode = 404 };
 
         // 3. Obter conta master e custodia
         var contaMaster = await _db.ContasGraficas
@@ -261,11 +263,11 @@ public class MotorCompraService : IMotorCompraService
 
         _db.Distribuicoes.AddRange(distribuicoes);
 
-        // Limpar itens zerados da custodia master
+        // Soft-delete itens zerados da custodia master
         var itensZerados = contaMaster.Custodia.Where(c => c.Quantidade <= 0).ToList();
         foreach (var item in itensZerados)
         {
-            _db.CustodiaItens.Remove(item);
+            item.Ativo = false;
         }
 
         await _db.SaveChangesAsync();

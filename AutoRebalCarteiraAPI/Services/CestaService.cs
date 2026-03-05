@@ -32,24 +32,36 @@ public class CestaService : ICestaService
     public async Task<CadastrarCestaResponse> CadastrarOuAlterarAsync(CadastrarCestaRequest request)
     {
         if (request.Itens.Count != 5)
-            throw new BusinessException(
-                $"A cesta deve conter exatamente 5 ativos. Quantidade informada: {request.Itens.Count}.",
-                "QUANTIDADE_ATIVOS_INVALIDA");
+            return new CadastrarCestaResponse
+            {
+                Failed = true,
+                ErrorMessage = $"A cesta deve conter exatamente 5 ativos. Quantidade informada: {request.Itens.Count}.",
+                ErrorCode = "QUANTIDADE_ATIVOS_INVALIDA",
+                StatusCode = 400
+            };
 
         var somaPercentuais = request.Itens.Sum(i => i.Percentual);
         if (somaPercentuais != 100)
-            throw new BusinessException(
-                $"A soma dos percentuais deve ser exatamente 100%. Soma atual: {somaPercentuais}%.",
-                "PERCENTUAIS_INVALIDOS");
+            return new CadastrarCestaResponse
+            {
+                Failed = true,
+                ErrorMessage = $"A soma dos percentuais deve ser exatamente 100%. Soma atual: {somaPercentuais}%.",
+                ErrorCode = "PERCENTUAIS_INVALIDOS",
+                StatusCode = 400
+            };
 
         if (request.Itens.Any(i => i.Percentual <= 0))
-            throw new BusinessException(
-                "Cada percentual deve ser maior que 0%.",
-                "PERCENTUAIS_INVALIDOS");
+            return new CadastrarCestaResponse
+            {
+                Failed = true,
+                ErrorMessage = "Cada percentual deve ser maior que 0%.",
+                ErrorCode = "PERCENTUAIS_INVALIDOS",
+                StatusCode = 400
+            };
 
         var cestaAnterior = await _db.CestasRecomendacao
             .Include(c => c.Itens)
-            .FirstOrDefaultAsync(c => c.Ativa);
+            .FirstOrDefaultAsync();
 
         var agora = DateTime.UtcNow;
         CestaDesativadaDto? cestaDesativada = null;
@@ -59,7 +71,7 @@ public class CestaService : ICestaService
 
         if (cestaAnterior != null)
         {
-            cestaAnterior.Ativa = false;
+            cestaAnterior.Ativo = false;
             cestaAnterior.DataDesativacao = agora;
 
             var tickersAntigos = cestaAnterior.Itens.Select(i => i.Ticker).ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -81,7 +93,7 @@ public class CestaService : ICestaService
         var novaCesta = new CestaRecomendacao
         {
             Nome = request.Nome,
-            Ativa = true,
+            Ativo = true,
             DataCriacao = agora,
             Itens = request.Itens.Select(i => new CestaItem
             {
@@ -132,8 +144,10 @@ public class CestaService : ICestaService
     {
         var cesta = await _db.CestasRecomendacao
             .Include(c => c.Itens)
-            .FirstOrDefaultAsync(c => c.Ativa)
-            ?? throw new BusinessException("Nenhuma cesta ativa encontrada.", "CESTA_NAO_ENCONTRADA", 404);
+            .FirstOrDefaultAsync();
+
+        if (cesta == null)
+            return new CestaAtualResponse { Failed = true, ErrorMessage = "Nenhuma cesta ativa encontrada.", ErrorCode = "CESTA_NAO_ENCONTRADA", StatusCode = 404 };
 
         var pastaCotacoes = _config["Cotahist:PastaCotacoes"] ?? "cotacoes";
         var tickers = cesta.Itens.Select(i => i.Ticker).ToList();
@@ -157,6 +171,7 @@ public class CestaService : ICestaService
     public async Task<HistoricoCestasResponse> ObterHistoricoAsync()
     {
         var cestas = await _db.CestasRecomendacao
+            .IgnoreQueryFilters()
             .Include(c => c.Itens)
             .OrderByDescending(c => c.DataCriacao)
             .ToListAsync();
@@ -167,7 +182,7 @@ public class CestaService : ICestaService
             {
                 CestaId = c.Id,
                 Nome = c.Nome,
-                Ativa = c.Ativa,
+                Ativa = c.Ativo,
                 DataCriacao = c.DataCriacao,
                 DataDesativacao = c.DataDesativacao,
                 Itens = c.Itens.Select(i => new CestaItemDto
