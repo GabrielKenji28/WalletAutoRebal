@@ -3,30 +3,24 @@ using AutoRebalCarteira.Data.Infrastructure.Cotahist;
 using AutoRebalCarteira.Domain.Entities;
 using AutoRebalCarteira.Domain.Exceptions;
 using AutoRebalCarteiraAPI.DTOs;
+using AutoRebalCarteiraAPI.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace AutoRebalCarteiraAPI.Services;
-
-public interface ICestaService
-{
-    Task<CadastrarCestaResponse> CadastrarOuAlterarAsync(CadastrarCestaRequest request);
-    Task<CestaAtualResponse> ObterCestaAtualAsync();
-    Task<HistoricoCestasResponse> ObterHistoricoAsync();
-}
 
 public class CestaService : ICestaService
 {
     private readonly AppDbContext _db;
     private readonly CotahistParser _parser;
     private readonly IConfiguration _config;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IRebalanceamentoChannel _rebalanceamentoChannel;
 
-    public CestaService(AppDbContext db, CotahistParser parser, IConfiguration config, IServiceProvider serviceProvider)
+    public CestaService(AppDbContext db, CotahistParser parser, IConfiguration config, IRebalanceamentoChannel rebalanceamentoChannel)
     {
         _db = db;
         _parser = parser;
         _config = config;
-        _serviceProvider = serviceProvider;
+        _rebalanceamentoChannel = rebalanceamentoChannel;
     }
 
     public async Task<CadastrarCestaResponse> CadastrarOuAlterarAsync(CadastrarCestaRequest request)
@@ -107,12 +101,8 @@ public class CestaService : ICestaService
 
         if (rebalanceamentoDisparado && cestaAnterior != null)
         {
-            _ = Task.Run(async () =>
-            {
-                using var scope = _serviceProvider.CreateScope();
-                var rebalService = scope.ServiceProvider.GetRequiredService<IMotorRebalanceamentoService>();
-                await rebalService.RebalancearPorMudancaCestaAsync(cestaAnterior.Id, novaCesta.Id);
-            });
+            await _rebalanceamentoChannel.EnfileirarAsync(
+                new RebalanceamentoCestaCommand(cestaAnterior.Id, novaCesta.Id));
         }
 
         var totalClientes = rebalanceamentoDisparado

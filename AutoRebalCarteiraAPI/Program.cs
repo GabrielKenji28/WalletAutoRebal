@@ -1,6 +1,8 @@
 using AutoRebalCarteira.Data;
 using AutoRebalCarteira.Data.Infrastructure.Cotahist;
 using AutoRebalCarteira.Data.Infrastructure.Kafka;
+using AutoRebalCarteira.Data.Interfaces;
+using AutoRebalCarteiraAPI.Interfaces;
 using AutoRebalCarteiraAPI.Middleware;
 using AutoRebalCarteiraAPI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +25,10 @@ builder.Services.AddScoped<IMotorCompraService, MotorCompraService>();
 builder.Services.AddScoped<IMotorRebalanceamentoService, MotorRebalanceamentoService>();
 builder.Services.AddScoped<ICustodiaMasterService, CustodiaMasterService>();
 
-// Background service
+// Background services
+builder.Services.AddSingleton<RebalanceamentoChannel>();
+builder.Services.AddSingleton<IRebalanceamentoChannel>(sp => sp.GetRequiredService<RebalanceamentoChannel>());
+builder.Services.AddHostedService<RebalanceamentoBackgroundService>();
 builder.Services.AddHostedService<CompraProgramadaBackgroundService>();
 
 // Controllers + JSON

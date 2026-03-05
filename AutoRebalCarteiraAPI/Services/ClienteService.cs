@@ -3,18 +3,10 @@ using AutoRebalCarteira.Data.Infrastructure.Cotahist;
 using AutoRebalCarteira.Domain.Entities;
 using AutoRebalCarteira.Domain.Exceptions;
 using AutoRebalCarteiraAPI.DTOs;
+using AutoRebalCarteiraAPI.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace AutoRebalCarteiraAPI.Services;
-
-public interface IClienteService
-{
-    Task<AdesaoResponse> AderirAsync(AdesaoRequest request);
-    Task<SaidaResponse> SairAsync(int clienteId);
-    Task<AlterarValorMensalResponse> AlterarValorMensalAsync(int clienteId, AlterarValorMensalRequest request);
-    Task<CarteiraResponse> ConsultarCarteiraAsync(int clienteId);
-    Task<RentabilidadeResponse> ConsultarRentabilidadeAsync(int clienteId);
-}
 
 public class ClienteService : IClienteService
 {

@@ -2,6 +2,7 @@ using AutoRebalCarteira.Domain.Entities;
 using AutoRebalCarteira.Domain.Exceptions;
 using AutoRebalCarteira.Data.Infrastructure.Cotahist;
 using AutoRebalCarteira.Data.Infrastructure.Kafka;
+using AutoRebalCarteira.Data.Interfaces;
 using AutoRebalCarteiraAPI.DTOs;
 using AutoRebalCarteiraAPI.Services;
 using Microsoft.Extensions.Logging;

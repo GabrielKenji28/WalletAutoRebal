@@ -1,17 +1,14 @@
 using AutoRebalCarteira.Data;
 using AutoRebalCarteira.Data.Infrastructure.Cotahist;
 using AutoRebalCarteira.Data.Infrastructure.Kafka;
+using AutoRebalCarteira.Data.Interfaces;
 using AutoRebalCarteira.Domain.Entities;
 using AutoRebalCarteira.Domain.Exceptions;
 using AutoRebalCarteiraAPI.DTOs;
+using AutoRebalCarteiraAPI.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace AutoRebalCarteiraAPI.Services;
-
-public interface IMotorCompraService
-{
-    Task<ExecutarCompraResponse> ExecutarCompraAsync(DateOnly dataReferencia);
-}
 
 public class MotorCompraService : IMotorCompraService
 {
@@ -298,7 +295,7 @@ public class MotorCompraService : IMotorCompraService
             Mensagem = $"Compra programada executada com sucesso para {clientes.Count} clientes."
         };
     }
-
+    //TODO: Não gostei desse método
     private static DateOnly AjustarParaDiaUtil(DateOnly data)
     {
         while (data.DayOfWeek == DayOfWeek.Saturday || data.DayOfWeek == DayOfWeek.Sunday)

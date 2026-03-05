@@ -1,4 +1,4 @@
-using AutoRebalCarteira.Domain.Exceptions;
+using AutoRebalCarteiraAPI.Interfaces;
 
 namespace AutoRebalCarteiraAPI.Services;
 

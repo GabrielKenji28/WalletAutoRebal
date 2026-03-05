@@ -1,15 +1,10 @@
 using System.Text.Json;
+using AutoRebalCarteira.Data.Interfaces;
 using Confluent.Kafka;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace AutoRebalCarteira.Data.Infrastructure.Kafka;
-
-public interface IKafkaProducerService
-{
-    Task PublicarIRDedoDuroAsync(IRDedoDuroMessage message);
-    Task PublicarIRVendaAsync(IRVendaMessage message);
-}
 
 public class KafkaProducerService : IKafkaProducerService, IDisposable
 {

@@ -1,16 +1,12 @@
 using AutoRebalCarteira.Data;
 using AutoRebalCarteira.Data.Infrastructure.Cotahist;
 using AutoRebalCarteira.Data.Infrastructure.Kafka;
+using AutoRebalCarteira.Data.Interfaces;
 using AutoRebalCarteira.Domain.Entities;
+using AutoRebalCarteiraAPI.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace AutoRebalCarteiraAPI.Services;
-
-public interface IMotorRebalanceamentoService
-{
-    Task RebalancearPorMudancaCestaAsync(int cestaAntigaId, int cestaNovaId);
-    Task RebalancearPorDesvioProporcaoAsync();
-}
 
 public class MotorRebalanceamentoService : IMotorRebalanceamentoService
 {
@@ -41,7 +37,7 @@ public class MotorRebalanceamentoService : IMotorRebalanceamentoService
             .IgnoreQueryFilters()
             .Include(c => c.Itens)
             .FirstAsync(c => c.Id == cestaAntigaId);
-
+//TODO: Nesse aqui, a cesta nova deveria ignorar os query filters?
         var cestaNova = await _db.CestasRecomendacao
             .IgnoreQueryFilters()
             .Include(c => c.Itens)

@@ -1,14 +1,10 @@
 using AutoRebalCarteira.Data;
 using AutoRebalCarteira.Data.Infrastructure.Cotahist;
 using AutoRebalCarteiraAPI.DTOs;
+using AutoRebalCarteiraAPI.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace AutoRebalCarteiraAPI.Services;
-
-public interface ICustodiaMasterService
-{
-    Task<CustodiaMasterResponse> ObterCustodiaMasterAsync();
-}
 
 public class CustodiaMasterService : ICustodiaMasterService
 {

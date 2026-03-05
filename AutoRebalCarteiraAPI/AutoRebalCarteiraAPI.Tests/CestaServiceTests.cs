@@ -1,7 +1,7 @@
 using AutoRebalCarteira.Data.Infrastructure.Cotahist;
 using AutoRebalCarteiraAPI.DTOs;
+using AutoRebalCarteiraAPI.Interfaces;
 using AutoRebalCarteiraAPI.Services;
-using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
 namespace AutoRebalCarteiraAPI.Tests;
@@ -13,9 +13,8 @@ public class CestaServiceTests
     private CestaService CreateService(AutoRebalCarteira.Data.AppDbContext db)
     {
         var config = TestHelper.CreateConfiguration();
-        var serviceCollection = new ServiceCollection();
-        var sp = serviceCollection.BuildServiceProvider();
-        return new CestaService(db, _parser, config, sp);
+        var channel = new Mock<IRebalanceamentoChannel>();
+        return new CestaService(db, _parser, config, channel.Object);
     }
 
     [Fact]

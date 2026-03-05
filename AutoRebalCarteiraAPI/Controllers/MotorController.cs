@@ -1,5 +1,5 @@
 using AutoRebalCarteiraAPI.DTOs;
-using AutoRebalCarteiraAPI.Services;
+using AutoRebalCarteiraAPI.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutoRebalCarteiraAPI.Controllers;
